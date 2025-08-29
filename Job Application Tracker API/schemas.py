@@ -1,8 +1,7 @@
-schemas.py
-
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
+from sqlmodel import SQLModel
 
 class JobApplicationCreate(BaseModel):
     company: str
@@ -42,3 +41,7 @@ class UserResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class LoginRequest(SQLModel):
+    username: str
+    password: str
