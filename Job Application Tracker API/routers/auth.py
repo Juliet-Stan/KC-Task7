@@ -1,6 +1,5 @@
-routers/auth.py
-
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session
 from datetime import timedelta
 
@@ -9,7 +8,8 @@ from schemas import UserCreate, UserResponse, Token
 from database import get_session
 from auth import (
     get_user_by_username, get_password_hash,
-    create_access_token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES
+    create_access_token, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES,
+    get_current_user
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -44,11 +44,10 @@ async def register_user(user: UserCreate, session: Session = Depends(get_session
 
 @router.post("/login", response_model=Token)
 async def login_user(
-    username: str,
-    password: str,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session)
 ):
-    user = authenticate_user(session, username, password)
+    user = authenticate_user(session, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -62,3 +61,14 @@ async def login_user(
     )
     
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_info(
+    current_user: User = Depends(get_current_user)
+):
+    return UserResponse(
+        id=current_user.id,
+        username=current_user.username,
+        email=current_user.email,
+        created_at=current_user.created_at
+    )
