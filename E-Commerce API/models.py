@@ -1,5 +1,3 @@
-#models.py
-
 from sqlmodel import SQLModel, Field, Session, create_engine, select
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -87,3 +85,7 @@ class Order(SQLModel):
     total: float
     status: str = "pending"
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class LoginRequest(SQLModel):
+    username: str
+    password: str
